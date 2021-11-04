@@ -1,0 +1,37 @@
+age
+sex
+
+[cp] Chest pain:
+	typical angina: ból w klatce piersowej i duszności. Są to bardziej objawy niż choroba. Tak samo jak katar, gorączka czy pot.
+	atypical angina: to też są objawy, ale trochę inne. To zmęczenie, zaburzenia snu, dusznośc, dyskomfort w klatce piersowej
+	non-anginal pain - ból w klatce piersiowej niebędący zespołem objawowym jakim jest dusznica bolesna
+	asymptomatic - brak bólu objawowego
+	
+	kategoryczne, brak prostej implikacji prawdopodobieństwa
+	
+trtbps - spoczynkowe ciśnienie krwi, przedziałowe, większe ciśnienie większe prawdopodobieńswto zawału
+
+chol - stężenie cholesterolu we krwi w miligramach na decylitr, przedziałowe, większy cholesterol, większe bezpośrednie prawdopodobieństwo zawału
+
+fbs - cukier w krwi (fasting to na czczo), przedziałowe, większy cukier, większe bezpośrednie prawdopodobieństwo zawału
+
+restecg:
+	0 - dobrze
+	1 - źle - na wykresie jest jakaś fala st, która wskazuje że był zawał serca
+	2 - źle - wykreś wskazuje napogrubione ścianki lewej komory, wskazuje na coś złege
+	
+thalachh : maximum heart rate achieved - self explenatory
+
+exang - wysiłek (próba wysiłkowa) spowodowała duszność (1), (0), nie spowodowała
+
+oldpeak -obniżenie odcinka ST wywołane wysiłkiem fizycznym w stosunku do odpoczynku
+
+[slp]slope - kategoryczne na podstawie ciągłego, nie rozumiemy znaczenia
+
+caa - number of major vessels.
+	wstrykują do ciała substancję zwaną kontrastem i mówią które tętnice świecą
+
+thal - talasemia
+	0 dobrze
+	1 źle
+	2 źle
