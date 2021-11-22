@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from Stump import Stump
 import functions
+import gini
 
 
 class AdaBoost():
@@ -14,14 +15,11 @@ class AdaBoost():
         self.stumps = []
         self.features_names = data.columns.to_list()[:-1]
 
-        self.output = self.data["output"].to_numpy()
-        self.examples_weights = np.full(self.rows_n, 1 / self.rows_n)
-        self.data["example_weight"] = pd.Series(self.examples_weights)
 
-    def sort_me(self, by):  # done
-        self.data.sort_values(by=by, inplace=True)
+        self.data["example_weight"] = pd.Series(np.full(self.rows_n, 1 / self.rows_n))
         self.output = self.data["output"].to_numpy()
         self.examples_weights = self.data["example_weight"].to_numpy()
+
 
     def add_new_stump(self):  # done
         new_stump = self.find_best_feature()
@@ -44,11 +42,10 @@ class AdaBoost():
 
         new_stump.about_to_say = functions.amount_of_say(new_stump.total_error)
 
-        self.examples_weights[~correct_array] *= np.exp(new_stump.about_to_say)
-        self.examples_weights[correct_array] *= np.exp(-new_stump.about_to_say)
+        factor = np.where(correct_array, -1.0, 1.0)
+        self.data["example_weight"] *= np.exp(factor * new_stump.about_to_say)
         weights_sum = np.sum(self.examples_weights)
-        self.examples_weights /= weights_sum
-        self.data["example_weight"] = pd.Series(self.examples_weights)
+        self.data["example_weight"] /= weights_sum
         self.stumps.append(new_stump)
 
         return True
@@ -62,22 +59,24 @@ class AdaBoost():
         for feature_name in self.features_names:
 
             if self.metadata[feature_name].data_type == "bool":
-                gini_index = self.calculate_gini_index_for_bool(self.data[feature_name].to_numpy())
+                gini_index = gini.calculate_gini_index_for_bool(
+                    self.data[feature_name].to_numpy(), self.output, self.examples_weights)
                 if gini_index < best_gini_index:
                     best_gini_index = gini_index
                     best_feature_name = feature_name
 
             elif self.metadata[feature_name].data_type == "con":
-                self.sort_me(by=feature_name)
-                gini_index, mean = self.calculate_gini_index_for_continuous(self.data[feature_name].to_numpy())
+                gini_index, mean = gini.calculate_gini_index_for_continuous(
+                    self.data[feature_name].to_numpy(), self.output, self.examples_weights)
                 if gini_index < best_gini_index:
                     best_gini_index = gini_index
                     best_feature_name = feature_name
                     best_mean = mean
 
             elif self.metadata[feature_name].data_type == "cat":
-                gini_index, true_subset = self.calculate_gini_index_for_categorical(
-                    self.data[feature_name].to_numpy(), self.metadata[feature_name].true_subsets)
+                gini_index, true_subset = gini.calculate_gini_index_for_categorical(
+                    self.data[feature_name].to_numpy(), self.output, self.examples_weights,
+                    self.metadata[feature_name].true_subsets)
                 if gini_index < best_gini_index:
                     best_gini_index = gini_index
                     best_feature_name = feature_name
@@ -92,36 +91,7 @@ class AdaBoost():
 
         return new_stump
 
-    def calculate_gini_index_for_bool(self, feature):  # done
-        yes_to_yes = np.sum(self.examples_weights[np.logical_and(feature, self.output)])
-        yes_to_no = np.sum(self.examples_weights[np.logical_and(feature, ~self.output)])
-        no_to_no = np.sum(self.examples_weights[np.logical_and(~feature, ~self.output)])
-        no_to_yes = np.sum(self.examples_weights[np.logical_and(~feature, self.output)])
 
-        yes_count = yes_to_yes + yes_to_no
-        no_count = no_to_no + no_to_yes
-
-        gini_index1 = 1 - ((yes_to_yes / yes_count) ** 2) - ((yes_to_no / yes_count) ** 2)
-        gini_index2 = 1 - ((no_to_no / no_count) ** 2) - ((no_to_yes / no_count) ** 2)
-        gini_index = ((yes_count * gini_index1) + (no_count * gini_index2))
-
-        return gini_index
-
-    def calculate_gini_index_for_continuous(self, feature):  # done
-        means = (feature[:-1] + feature[1:]) / 2
-
-        min_value, max_value = np.amin(feature), np.amax(feature)
-        means = means[np.logical_and(means>min_value, means<max_value)]
-
-        gini_indices = [self.calculate_gini_index_for_bool(feature > mean) for mean in means]
-        best_index = np.argmin(gini_indices)
-        return gini_indices[best_index], means[best_index]
-
-    def calculate_gini_index_for_categorical(self, feature, real_subsets):  # done
-        gini_indices = [self.calculate_gini_index_for_bool(np.isin(feature, real_subset))
-                        for real_subset in real_subsets]
-        best_index = np.argmin(gini_indices)
-        return gini_indices[best_index], real_subsets[best_index]
 
     def train(self, stumps_nr):  # done
         self.stumps = []

@@ -3,13 +3,14 @@ import numpy as np
 
 class Stump:
     def __init__(self, feature_name, gini_index, data_type, about_to_say=0, total_error=0.0,
-                 *, threshold=None, subset=None): #done
+                 *, actual_error=None, threshold=None, subset=None): #done
 
         self.feature_name = feature_name
         self.gini_index = gini_index
         self.data_type = data_type
         self.about_to_say = about_to_say
         self.total_error = total_error
+        self.actual_error = actual_error
         self.threshold = threshold
         self.subset = subset
 
@@ -63,3 +64,5 @@ class Stump:
             print(self.feature_name, "belongs to ", self.subset)
         print("my about_to_say: ", self.about_to_say)
         print("my gini_index : ", self.gini_index)
+        print("my total_error : ", self.total_error)
+        print("my actual_error : ", self.actual_error)
