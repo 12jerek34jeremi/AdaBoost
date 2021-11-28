@@ -3,3 +3,6 @@
 data/*
 __pycache__/
 study_materials/*
+data_prevous.py
+modified_golem_train.csv
+train_heart.py

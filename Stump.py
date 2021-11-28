@@ -29,7 +29,7 @@ class Stump:
                 return -self.about_to_say
         elif self.data_type == "con":
             print(self.feature_name + " > " + self.threshold)
-            if (feature > self.threshold):
+            if (np.nan_to_num(feature, nan=np.inf) > self.threshold):
                 print("sum+= 1 * (", self.about_to_say, ")")
                 return self.about_to_say
             else:
@@ -47,12 +47,14 @@ class Stump:
     def say(self, data_frame): #done
         return_array = np.full(data_frame.shape[0], self.about_to_say)
         feature = data_frame[self.feature_name].to_numpy()
+        factor = None
         if self.data_type == "bool":
-            return_array[~feature] *= (-1)
+            factor = np.where(feature, 1.0, -1.0)
         elif self.data_type == "con":
-            return_array[feature <= self.threshold] *= (-1)
+            factor = np.where(np.nan_to_num(feature, nan=np.inf) > self.threshold, 1.0, -1.0)
         elif self.data_type == "cat":
-            return_array[feature not in self.subset] *= (-1)
+            factor = np.where(np.isin(feature, self.subset), 1.0, -1.0)
+        return_array *= factor
         return return_array
 
     def pretty_print(self): #done
