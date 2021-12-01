@@ -1,18 +1,26 @@
-import numpy as np
 import pandas as pd
-from AdaBoost import AdaBoost
-import data as data_manager
-import matplotlib.pyplot as plt
 import pickle
-from os import system
-import pretty_print as pp
+from multiclass_adaboost import MulticlassAdaBoost
 
-
-def clear():
-    system('cls')
 
 df = pd.read_csv("data/modified_golem_train.csv", index_col='Id')
 metadata = None
 with open("data/golem_metadata.pickle", "rb") as file:
     metadata = pickle.load(file)
-cd 
+pd.set_option("max_rows", None)
+
+train_fraction = 0.7
+train_rows_n = int(df.shape[0] * train_fraction)
+df = df.sample(n=df.shape[0])
+df_train = df.iloc[0:train_rows_n, :].copy()
+df_test = df.iloc[train_rows_n:, :].copy()
+stumps_nr, adab_nr = 7, 10
+
+
+
+
+
+
+
+
+

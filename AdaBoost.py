@@ -145,11 +145,9 @@ class AdaBoost():
             print('\n')
 
     def test(self, data_frame=None):
-        if data_frame is None:
-            data_frame = self.data
 
         predictions = self.predict(data_frame) >= 0.0
-        output = data_frame["output"].to_numpy() == 1.0
+        output = data_frame["output"].to_numpy()
 
         metrics = {}
         true_positive = np.count_nonzero(np.logical_and(predictions, output))
