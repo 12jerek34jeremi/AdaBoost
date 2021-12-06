@@ -1,5 +1,5 @@
 import numpy as np
-
+import pickle
 from AdaBoostEnsemble import AdaBoostEnsemble
 from Metadata import Metadata
 import pandas as pd
@@ -19,13 +19,15 @@ class MulticlassAdaBoost:
             new_ensemble.train(data.copy(), stump_nr, train_on, extra_data_prepare, equal)
             self.ensembles.append(new_ensemble)
 
-    def predict(self, df: pd.DataFrame):
+    def predict(self, df: pd.DataFrame, save_to_df: bool = False):
         predictions = []
         for ensemble in self.ensembles:
             predictions.append(ensemble.predict(df))
         prediction = np.column_stack(predictions)
         prediction = np.argmax(prediction, axis=1)
 
+        if save_to_df:
+            df['prediction'] = pd.Series(prediction, index=df.index)
         return prediction
 
     def test(self, df: pd.DataFrame):
@@ -33,4 +35,8 @@ class MulticlassAdaBoost:
         output = df['output'].to_numpy()
         correct_count = np.count_nonzero(prediction == output)
         return correct_count/output.shape[0]
+
+    def save(self, filepath):
+        with open(filepath, 'wb') as file:
+            pickle.dump(self, file)
 

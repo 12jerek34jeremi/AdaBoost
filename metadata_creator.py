@@ -6,14 +6,14 @@ import itertools
 from os import system
 
 data_types = None
-with open("data/data_types_golem_train.pickle", "rb") as file2:
-    data_types = pickle.load(file2)
-file = open("data/data_types_notes.txt", "at")
-df = pd.read_csv("data/modified_golem_train.csv", index_col="Id")
-df_original = pd.read_csv("data/golem_train.csv", index_col="Id")
-column = 'number_diagnoses'
-p1, p2 = 17, 22
-pd.set_option("max_rows", None)
+# with open("data/data_types_golem_train.pickle", "rb") as file2:
+#     data_types = pickle.load(file2)
+file = open("data/data_types_test_notes.txt", "at")
+df = pd.read_csv("data/modified_golem_test.csv", index_col="Id")
+df_original = pd.read_csv("data/golem_test.csv", index_col="Id")
+column = None
+p1, p2 = 0, 10
+# pd.set_option("max_rows", None)
 
 
 def categorise() -> dict[str, int]:
@@ -22,21 +22,17 @@ def categorise() -> dict[str, int]:
     categories_list = list(map(str, df[column].value_counts(dropna=False).index.to_list()))
     categories_list.sort()
     categories = dict(zip(categories_list, range(len(categories_list))))
-    values = list(map(str, df[column].to_numpy().tolist()))
-    new_values = []
-    for value in values:
-        new_values.append(categories[value])
-
-    df[column] = pd.Series(np.array(new_values), index=df.index)
+    df[column] = df[column].replace(categories)
 
     return categories
 
 
-def note_data_type(data_type: str, true_value:str = None, false_value:str = None) -> None:
+def note_data_type(data_type: str, true_value:str = None, false_value:str = None, dictionary=None) -> None:
     global file
     global df
     global data_types
     global column
+    my_str = None
     if data_type == "con":
         file.write("The '" + column + "' is continuous data.\n\n")
     elif data_type == "bool":
@@ -47,20 +43,25 @@ def note_data_type(data_type: str, true_value:str = None, false_value:str = None
                    true_value + " is interpreted as True.\n" +
                    false_value + " is interpreted as False.\n\n")
     elif data_type == "cat":
-        my_str = str(categorise())
+        if dictionary is None:
+            my_str = str(categorise())
+        else:
+            df[column] = df[column].replace(dictionary)
+            my_str = str(dictionary)
         file.write("The '" + column + "' is categorical data.\n"
-                                           "Each categorie was assigned to a categorie index as seen below.\n"
-                                           "Then values of columns have been replaced by categories indices.\n" + my_str + "\n\n")
-    data_types[column] = data_type
+                    "Each categorie was assigned to a categorie index as seen below.\n"
+                    "Then values of columns have been replaced by categories indices.\n" + my_str + "\n\n")
+    # data_types[column] = data_type
     file.flush()
+    return my_str
 
 
 def save():
     global df
     global data_types
-    with open("data/data_types_golem_train.pickle", "wb") as file2:
-        pickle.dump(data_types, file2)
-    df.to_csv("data/modified_golem_train.csv")
+    # with open("data/data_types_golem_train.pickle", "wb") as file2:
+    #     pickle.dump(data_types, file2)
+    df.to_csv("data/modified_golem_test.csv")
 
 
 def create_dict(first_value: str, firs_new_value: int, step: int = 1) -> dict[str, str]:
@@ -78,8 +79,7 @@ def create_dict(first_value: str, firs_new_value: int, step: int = 1) -> dict[st
 def replace_with_dict(dictionary: dict) -> None:
     global df
     global column
-    for value, new_value in dictionary.items():
-        df[column] = df[column].where(df[column] != value, new_value)
+    df[column] = df[column].replace(dictionary)
 
 
 def values():
@@ -105,7 +105,7 @@ def to_float():
 def replace(value: str, new_value: str) -> None:
     global df
     global column
-    df[column] = df[column].where(df[column] != value, new_value)
+    df[column] = df[column].replace({value: new_value})
 
 
 def clear():
@@ -115,6 +115,7 @@ def clear():
 def col():
     global column
     print(column)
+
 
 def nc(): # next column
     global df
